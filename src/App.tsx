@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 
-interface Bills {
+interface Bill {
   id: string
   amount: number
   note: string
@@ -12,14 +12,18 @@ function App() {
   //const [total, setTotal] = useState(0)
   const [amount, setAmount] = useState("")
   const [note, setNote] = useState("")
-  const [bills, setBills] = useState<Bills[]>([])
+  const [bills, setBills] = useState<Bill[]>([])
   const total = bills.reduce((acumulado, bill) => acumulado + bill.amount, 0)
 
 
   function addBill() {
-    const newBill: Bills = {
+    const num = Number(amount)
+
+    if (isNaN(num) || num <= 0) return
+    
+    const newBill: Bill = {
       id: crypto.randomUUID(),
-      amount: Number(amount),
+      amount: num,
       note: note
     }
 
@@ -40,9 +44,9 @@ function App() {
       <section>
         <div>
           <h2>Nuevo gasto</h2>
-          <label>Importe:</label>
-          <input id="amount" value={amount} onChange={(e) => setAmount(e.target.value)}/>
-          <label>Nota:</label>
+          <label htmlFor="amount">Importe:</label>
+          <input id="amount" value={amount} min="0.01" step="0.01" type="number" onChange={(e) => setAmount(e.target.value)}/>
+          <label htmlFor="note">Nota:</label>
           <input id="note" value={note} onChange={(e) => setNote(e.target.value)}/>
         </div>    
         <button type="button" onClick={addBill}>
