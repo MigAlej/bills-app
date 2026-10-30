@@ -42,7 +42,7 @@ function App() {
     <>
       <section>
         <div>
-          <h1>Mis Gastos</h1>
+          <h1 className="text-3xl font-bold">Mis Gastos</h1>
           <p>Total gastado: {total}€</p>
         </div>
       </section>
