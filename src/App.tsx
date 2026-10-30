@@ -1,5 +1,7 @@
-import { useState } from 'react'
-
+import { useEffect, useState } from 'react'
+import type { Session } from '@supabase/supabase-js'
+import Login from './login'
+import { supabase } from './lib/supabase'
 
 interface Bill {
   id: string
@@ -18,7 +20,15 @@ function App() {
   const [category, setCategory] = useState("")
   const [bills, setBills] = useState<Bill[]>([])
   const total = bills.reduce((acumulado, bill) => acumulado + bill.amount, 0)
-  
+  const [session, setSession] = useState<Session | null>(null)
+
+  useEffect(() => {
+    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session)
+    })
+    return () => data.subscription.unsubscribe()
+  }, [])
+
 
   function addBill() {
     const num = Number(amount)
@@ -47,6 +57,7 @@ function App() {
     setBills((prev) => prev.filter((bill) => bill.id !== id))
   }
 
+  if (!session) return <Login />
   return (
     <>
       <section>
