@@ -33,6 +33,11 @@ function App() {
     setNote('')
   }
 
+  function deleteBill(id: string) {
+
+    setBills((prev) => prev.filter((bill) => bill.id !== id))
+  }
+
   return (
     <>
       <section>
@@ -55,7 +60,9 @@ function App() {
         <p>Gastos: </p>
         <ul>
           {bills.map((g) => (
-            <li key={g.id}>{g.note}: {g.amount} €</li>
+            <li key={g.id}>{g.note}: {g.amount} €
+            <button type="button" onClick={() => deleteBill(g.id)}>Borrar</button>
+            </li> 
           ))}
         </ul>
       </section>
