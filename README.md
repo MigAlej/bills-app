@@ -1,75 +1,37 @@
-# React + TypeScript + Vite
+# Mis Gastos
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A small app I built to keep track of my own spending. It's in Spanish because that's what I use day to day.
 
-Currently, two official plugins are available:
+## How I manage money (and why the app works this way)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+My salary goes into a savings account that I don't touch. Every month I move some money from there to a checking account, and all my normal spending comes out of that one. Whatever is left over at the end of the month carries over to the next.
 
-## React Compiler
+When something big comes up, I move extra money from savings first and then pay for it from checking. So in the app that's just another transfer for that month.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Sometimes money comes in from other people too, like family paying their share of the rent. That goes into the month's budget as well, but it's kept apart from my own transfers so it doesn't look like I took it out of savings.
 
-## Expanding the ESLint configuration
+## What it does
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- **Gastos**: add expenses with an amount, a date, an optional note ("cena Juan") and an optional category. I only use categories for things I want to keep an eye on, like fuel or groceries.
+- **Calendario**: a month view that shows how much I spent each day. Tap a day to see it broken down by category.
+- **Mes**: the checking account balance for the month (left over from last month + transfers − expenses), the transfers I made, and my salary, so I can see how much I actually saved.
+- **Año**: salary, spending and savings for each month of the year.
+- **Categorías**: add or remove categories for the dropdown.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+The data lives in Supabase, so it syncs between my phone and my computer.
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## Built with
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+React, TypeScript, Vite, Tailwind CSS and Supabase (database and login).
 
-```
+## Running it locally
 
-You can also install [eslint-plugin-react-x](https://npmx.dev/package/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://npmx.dev/package/eslint-plugin-react-dom) for React-specific lint rules:
+1. Create a Supabase project and run `supabase/schema.sql` in its SQL Editor.
+2. Copy `.env.example` to `.env.local` and fill in your project URL and publishable key.
+3. Create your user in Supabase under Authentication → Users. Sign-ups are turned off, so that's the only way in.
+4. Install and start it:
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
-```
+   ```
+   npm install
+   npm run dev
+   ```

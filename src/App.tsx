@@ -2,100 +2,107 @@ import { useEffect, useState } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import Login from './login'
 import { supabase } from './lib/supabase'
+import { useData } from './lib/useData'
+import { addMonths, monthLabel, monthOf, today } from './lib/dates'
+import BillsView from './views/BillsView'
+import CalendarView from './views/CalendarView'
+import MonthView from './views/MonthView'
+import YearView from './views/YearView'
+import CategoriesView from './views/CategoriesView'
 
-interface Bill {
-  id: string
-  amount: number
-  note: string
-  date: string
-  category?: string
-}
+const TABS = [
+  { id: 'gastos', label: 'Gastos' },
+  { id: 'calendario', label: 'Calendario' },
+  { id: 'mes', label: 'Mes' },
+  { id: 'año', label: 'Año' },
+  { id: 'categorias', label: 'Categorías' },
+] as const
 
+type Tab = (typeof TABS)[number]['id']
 
 function App() {
-  //const [total, setTotal] = useState(0)
-  const [amount, setAmount] = useState("")
-  const [note, setNote] = useState("")
-  const [date, setDate] = useState("")
-  const [category, setCategory] = useState("")
-  const [bills, setBills] = useState<Bill[]>([])
-  const total = bills.reduce((acumulado, bill) => acumulado + bill.amount, 0)
   const [session, setSession] = useState<Session | null>(null)
+  // Render nothing until Supabase knows if there's a saved session, otherwise the login flashes on reload
+  const [checking, setChecking] = useState(true)
 
   useEffect(() => {
     const { data } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session)
+      setChecking(false)
     })
     return () => data.subscription.unsubscribe()
   }, [])
 
-
-  function addBill() {
-    const num = Number(amount)
-
-    if (isNaN(num) || num <= 0) return
-    if (!date) return
-    
-    const newBill: Bill = {
-      id: crypto.randomUUID(),
-      amount: num,
-      note: note,
-      date: date,
-      category: category || undefined
-    }
-
-    setBills((prev) => [...prev, newBill])
-
-    setAmount('')
-    setNote('')
-    setDate('')
-    setCategory('')
-  }
-
-  function deleteBill(id: string) {
-
-    setBills((prev) => prev.filter((bill) => bill.id !== id))
-  }
-
+  if (checking) return null
   if (!session) return <Login />
+  return <Home userId={session.user.id} />
+}
+
+function Home({ userId }: { userId: string }) {
+  const data = useData(userId)
+  const [month, setMonth] = useState(() => monthOf(today()))
+  const [tab, setTab] = useState<Tab>('gastos')
+
+  const showMonthNav = tab === 'gastos' || tab === 'calendario' || tab === 'mes'
+
   return (
-    <>
-      <section>
-        <div>
+    <div className="min-h-screen bg-slate-100 text-slate-900">
+      <div className="mx-auto max-w-xl space-y-4 px-4 py-4">
+        <header className="flex items-center justify-between">
           <h1 className="text-3xl font-bold">Mis Gastos</h1>
-          <p>Total gastado: {total}€</p>
-        </div>
-      </section>
-      <section>
-        <div>
-          <h2>Nuevo gasto</h2>
-          <label htmlFor="amount">Importe:</label>
-          <input id="amount" value={amount} min="0.01" step="0.01" type="number" onChange={(e) => setAmount(e.target.value)}/>
-          <label htmlFor="note">Nota:</label>
-          <input id="note" value={note} onChange={(e) => setNote(e.target.value)}/>
-          <label htmlFor="date">Fecha:</label>
-          <input id="date" type="date" value={date} onChange={(e) => setDate(e.target.value)}/>
-          <label htmlFor="category">Tipo de gasto:</label>
-          <select id="category" value={category} onChange={(e) => setCategory(e.target.value)}>
-            <option value="">Sin categoría</option>
-            <option value="Gasolina">Gasolina</option>
-            <option value="Mercado">Mercado</option>
-            <option value="Gato">Gato</option>    
-          </select>
-        </div>    
-        <button type="button" onClick={addBill}>
-          Añadir
-        </button>
-        <p>Gastos: </p>
-        <ul>
-          {bills.map((g) => (
-            <li key={g.id}>{g.note}: {g.amount} € | Fecha: {g.date} | {g.category && <span> | {g.category}</span>}
-            <button type="button" onClick={() => deleteBill(g.id)}>Borrar</button>
-            </li> 
+          <button type="button" className="rounded-lg px-3 py-1 text-sm text-slate-600 hover:bg-slate-200" onClick={() => supabase.auth.signOut()}>
+            Salir
+          </button>
+        </header>
+
+        <nav className="grid grid-cols-5 gap-1 rounded-xl bg-white p-1 shadow-sm">
+          {TABS.map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              onClick={() => setTab(t.id)}
+              className={`rounded-lg px-1 py-2 text-xs font-medium sm:text-sm ${tab === t.id ? 'bg-emerald-600 text-white' : 'text-slate-600 hover:bg-slate-100'}`}
+            >
+              {t.label}
+            </button>
           ))}
-        </ul>
-      </section>
-    </>
+        </nav>
+
+        {showMonthNav && (
+          <div className="flex items-center justify-between">
+            <button type="button" className="rounded-lg px-3 py-1 text-xl hover:bg-slate-200" onClick={() => setMonth(addMonths(month, -1))} aria-label="Mes anterior">‹</button>
+            <button type="button" className="text-lg font-semibold capitalize" onClick={() => setMonth(monthOf(today()))} title="Ir al mes actual">
+              {monthLabel(month)}
+            </button>
+            <button type="button" className="rounded-lg px-3 py-1 text-xl hover:bg-slate-200" onClick={() => setMonth(addMonths(month, 1))} aria-label="Mes siguiente">›</button>
+          </div>
+        )}
+
+        {data.error && (
+          <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">Error: {data.error}</p>
+        )}
+
+        {data.loading ? (
+          <p className="text-center text-slate-500">Cargando...</p>
+        ) : (
+          <>
+            {/* key={month} remounts the forms when the month changes, so their date resets */}
+            {tab === 'gastos' && <BillsView key={month} month={month} data={data} />}
+            {tab === 'calendario' && <CalendarView month={month} bills={data.bills} />}
+            {tab === 'mes' && <MonthView month={month} data={data} />}
+            {tab === 'año' && (
+              <YearView
+                year={Number(month.slice(0, 4))}
+                data={data}
+                onChangeYear={(year) => setMonth(`${year}${month.slice(4)}`)}
+                onOpenMonth={(m) => { setMonth(m); setTab('mes') }}
+              />
+            )}
+            {tab === 'categorias' && <CategoriesView data={data} />}
+          </>
+        )}
+      </div>
+    </div>
   )
 }
 

@@ -1,0 +1,9 @@
+{
+  "name": "Mis Gastos",
+  "short_name": "Gastos",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f1f5f9",
+  "theme_color": "#059669",
+  "icons": [{ "src": "favicon.svg", "sizes": "any", "type": "image/svg+xml" }]
+}
