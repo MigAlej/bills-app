@@ -2,6 +2,7 @@ import type { Data } from '../lib/useData'
 import { monthOf, shortMonthLabel, today } from '../lib/dates'
 import { monthSummary } from '../lib/summary'
 import Row from './Row'
+import YearCategories from './YearCategories'
 import { card } from '../ui'
 
 interface Props {
@@ -93,6 +94,8 @@ function YearView({ year, data, onChangeYear, onOpenMonth }: Props) {
           Importes en euros. "Ahorro cta." es lo que quedó en la cuenta de ahorro. Pulsa un mes para ver su detalle.
         </p>
       </section>
+
+      <YearCategories year={year} data={data} onOpenMonth={onOpenMonth} />
     </div>
   )
 }
